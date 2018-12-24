@@ -1,12 +1,15 @@
 # 实例分割 - 基于 Mask R-CNN 和 TensorFlow
 
+
+[Temp Source](https://engineering.matterport.com/splash-of-color-instance-segmentation-with-mask-r-cnn-and-tensorflow-7c761e238b46)
+
 今年11月，我们开源了我们对 [Mask R-CNN 实现源码](https://github.com/matterport/Mask_RCNN)。自那以后，我们的项目被fork了1400次，同时被应用在多个项目中，并且有许多的开发者对项目源码作出了改进。同时，我们也收到了许多关于我们项目的问题，所以在这篇文章中，我将阐述一下我们对 Mask R-CNN 的实现细节并展示它在实际项目中的应用。
 
 本篇文章将覆盖以下两个内容：
 1. Mask R-CNN 的概述。 
 2. 如何从零开始训练一个数据模型并搭建一个图片颜色渲染滤镜。
 
-**Code Tip:**
+> **代码提示:**
 *这是本篇文章展示项目的[全部代码](https://github.com/matterport/Mask_RCNN/tree/master/samples/balloon)，包括我创建的数据集和训练后的模型。*
 
 ## 什么是实例分割?
@@ -20,6 +23,13 @@
 - **实例分割 (Instance Segmentation)**: 这是是图片中7个气球的位置，包括组成每一个气球的像素。
 
 ## Mask R-CNN
+Mask R-CNN (Regional Convolutional Neural Network: 区域卷积神经网络)，是一个分为两个主要步骤的框架：第一步，扫描整张图片，并生成可能包含所找实例的所有区域。第二步，将上一步生成的区域进行分类并生成边界框和蒙层
+
+[Mask R-CNN](https://arxiv.org/abs/1703.06870) 是基于 [Faster R-CNN](https://arxiv.org/abs/1506.01497) 基础上的拓展，而且是由同一作者于去年发布。Faster R-CNN 是一个用于目标检测 (Object Detection) 的框架，而 Mask R-CNN 则是在这个基础上拓展出了实例分割 (Instance Segmentation) 与其他的新功能。
+
+![Mask R-CNN](https://cdn-images-1.medium.com/max/1600/1*IWWOPIYLqqF9i_gXPmBk3g.png "Mask R-CNN framework. Source: https://arxiv.org/abs/1703.06870")
+
+整体上，Mask R-CNN 可以分为以下几个模块：
 
 ## 1. Backbone
 
