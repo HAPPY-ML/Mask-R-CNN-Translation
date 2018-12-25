@@ -35,17 +35,17 @@ Mask R-CNN (Regional Convolutional Neural Network: 区域卷积神经网络)，�
 
 ### Feature Pyramid Network
 
-## 2. 区域方案网络 (Region Proposal Network 下面简称 RPN )
+## 2. 区域建议网络 (Region Proposal Network 下面简称 RPN )
 ![rpn](https://cdn-images-1.medium.com/max/600/1*ESpJx0XLvyBa86TNo2BfLQ.png)
 
 RPN 是一个通过使用滑动窗口方式扫描图片，以挖掘出含有物体区域的轻量级神经网络。
 
-RPN 扫描出的区域,我们称为锚点。这些锚点在图上表现出来的就是一个个盒子(box)，如上图所示，及时这已经是简化过的图片了实际上，这些锚点能多达 200k 个，并且是不同尺寸，不同宽高比的.它们会重叠在一起，以尽可能多地覆盖图片。 
+RPN 扫描出的区域,我们称为锚点。这些锚点在图上表现出来的就是一个个盒子(box)，如上图所示，即使这已经是简化过的图片。实际上，这些锚点能多达 200k 个，并且是不同尺寸，不同宽高比的。它们会重叠在一起，以尽可能多地覆盖图片。 
 
 RPN 扫描出这么多的锚点，可以多快呢？事实上,相当快.这些滑动的窗口被RPN的卷积特性所处理, RPN 能在 GPU 上并行地扫描所有区域。更进一步，RPN并不是直接地扫描整张图片（虽然图例上我们是直接画出这些锚点）。相反， RPN 是通过 扫描骨干特征图（backbone feature map ） 得到锚点的。而这一的操作的目的是为了让 RPN 高效复用已经提取出的特征，以及避免重复的计算。根据 [Faster RCNN paper](https://arxiv.org/abs/1506.01497) 介绍， RPN 在这些优化下，能在 10 ms 内得到锚点。而在 Mask RCNN 中，我们通常会使用尺寸更大的图片以及更多的锚点，所以训练时间上可能会更久一点。
 
 > **代码提示：**
-> rpn 网络构建代码在 [model.rpn_graph](https://github.com/diaoxinqiang/Mask_RCNN/blob/e4b922624f0bd239607e7eeac79fa8dcab47b8b7/mrcnn/model.py) 方法中，可以在 [config.py](https://github.com/diaoxinqiang/Mask_RCNN/blob/e4b922624f0bd239607e7eeac79fa8dcab47b8b7/mrcnn/config.py) 文件中修改 *RPN_ANCHOR_SCALES* 以及   *RPN_ANCHOR_RATIOS* 参数改变锚点尺寸以及宽高比。
+> rpn 网络构建代码在 [`model.rpn_graph`](https://github.com/diaoxinqiang/Mask_RCNN/blob/e4b922624f0bd239607e7eeac79fa8dcab47b8b7/mrcnn/model.py) 方法中，可以在 [config.py](https://github.com/diaoxinqiang/Mask_RCNN/blob/e4b922624f0bd239607e7eeac79fa8dcab47b8b7/mrcnn/config.py) 文件中修改 `RPN_ANCHOR_SCALES` 以及   `RPN_ANCHOR_RATIOS` 参数改变锚点尺寸以及宽高比。
 
 RPN 会为每个锚点生成两个输出:
 
@@ -53,9 +53,43 @@ RPN 会为每个锚点生成两个输出:
 2. 精细的边界框：一个前景锚点（也可以叫正极锚点）可能不会非常完美地定位在检测物体的中心位置上，所以 RPN 会估计一个估算出一个增量（ delta ，即针对矩形的x ,y , width , height 的百分比 ）来修正锚点盒子（ anchor box ）以更好地贴合检测物体。
 
 ![ Anchor Class](https://cdn-images-1.medium.com/max/600/1*EMNE8bxOT4RI3HMjIqjCwQ.png)
+在 RPN 预测过程中，我们会选择最可能包含物体的锚点，然后去修正它们的位置以及尺寸。如果有些锚点重叠得太多，我们会保留前景得分最高的一个，而其他的锚点就丢弃掉（这种方式成为非最大抑制 Non-max Suppression ）。在我们得到最终的建议（也就是我们感兴趣的区域 regions of interest,简称 ROI）之后，我们就能进入下一阶段。
 
+> **代码提示:**
+`ProposalLayer` 是使用自定义的 Keras 层构建的， 用来读取 RPN的输出结果，选择得分最高的锚点以及进行边界框修正。
 ## 3. ROI Classifier & Bounding Box Regressor
 
 ### ROI Pooling
 
 ## 4. Segmentation Masks
+
+## 一起来构造一个颜色渲染滤镜
+和其他大多数有图片滤镜的图片编辑应用不同的是，我们的滤镜加了点人工智能，会更聪明一点：它会自动地找到特定的物体。如果你将这个滤镜在视频中使用，而不是单单一张图片，甚至会更有效果。
+![效果图](https://cdn-images-1.medium.com/max/1200/1*lAP6vX1tLQaxFn6XGEQ32g.gif)
+
+#### 1. Training Dataset
+一般来说，我会从搜索包含我需要的物体的公开数据集开始。但在这个示例中，我想要把这个过程都记录夏日，以展示如何从零开始中构建一个数据集。
+我从 `flickr` 中搜索关于气球的图片，并且这些图片是限定在"商业用户 & 允许修改"的许可证下。这个搜索结果得到的图片已经能满足我的需求了。我一共挑选了75张图片，并且它们分成训练集以及验证集。找图片是挺简单的事情，但标注图片才是艰难的部分。
+![search](https://cdn-images-1.medium.com/max/1600/1*Q4tCdhwrklvJLM9zn5aDhg.png)
+等等，难道我们不是应该需要上百万的图片去训练深度学习模型的吗？有时候，你确实需要如此，但是更多情况下，你并不需要这么多图片。我主要依靠下面两个技巧来显著地降低训练要求。
+第一个技巧：迁移学习。简单来说，不是使用从零训练一个模型，而是已经在 `COCO dataset`中训练得到的模型参数中开始训练（我们在 `github` 代码库中有提供）。
+Wait! Don’t we need, like, a million images to train a deep learning model? Sometimes you do, but often you don’t. I’m relying on two main points to reduce my training requirements significantly:
+
+First, transfer learning. Which simply means that, instead of training a model from scratch, I start with a weights file that’s been trained on the COCO dataset (we provide that in the github repo). Although the COCO dataset does not contain a balloon class, it contains a lot of other images (~120K), so the trained weights have already learned a lot of the features common in natural images, which really helps. And, second, given the simple use case here, I’m not demanding high accuracy from this model, so the tiny dataset should suffice.
+
+There are a lot of tools to annotate images. I ended up using VIA (VGG Image Annotator) because of its simplicity. It’s a single HTML file that you download and open in a browser. Annotating the first few images was very slow, but once I got used to the user interface, I was annotating at around an object a minute.
+## Loading the Dataset
+
+
+
+## Verify the Dataset
+
+## Configurations
+
+## Training
+
+## Inspecting the Results
+
+## Color Splash
+
+## FAQ
