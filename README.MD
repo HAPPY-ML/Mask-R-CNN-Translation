@@ -31,9 +31,28 @@ Mask R-CNN (Regional Convolutional Neural Network: 区域卷积神经网络)，�
 
 整体上，Mask R-CNN 可以分为以下几个模块：
 
-## 1. Backbone
+## 1. 骨干网络 (Backbone)
+![Simplified illustration of the backbone nework](https://cdn-images-1.medium.com/max/1200/1*IDjLXsSw5QMFWDudayIBfw.png)
 
-### Feature Pyramid Network
+如图所示，是一个用常规的卷积神经网络实现的特征提取器，通常是采用的 ResNet50 或 ResNet101。神经网络前面的层级查找底层特征(图像的边缘与角)，接下来后面的层级会继续查找更高层级的特征(车、人、天空)。
+
+通过骨干网络的处理，输入为 1024\*1024px\*3(RGB) 的图片会被转化成 32\*32\*2048 的特征点矩阵。输出的特征点矩阵就是我们后面步骤的输入。
+
+> **代码提示:**
+*骨干网络的构造在 [resnet_graph()](https://github.com/matterport/Mask_RCNN/blob/master/mrcnn/model.py#L171) 方法中实现。代码同时支持 ResNet50 和 ResNet101.*
+
+### 特征金字塔网络 (Feature Pyramid Network)
+![Feature Pyrmaid Network](https://cdn-images-1.medium.com/max/1200/1*1sCveJrqfthOQsGGZRs2tQ.png)
+
+由 Mask R-CNN 的作者提出的 [特征金字塔网络 (FPN)](https://arxiv.org/abs/1612.03144) 是基于上述骨干网络的优化。和骨干网络相比，FPN 可以在不同的层级更精准地表现出物体。
+
+如图，在骨干网络的基础上，FPN 增加了另外一个金字塔结构，将高层级的输出特征传递到低层级。通过这种方式，每个层级都可以访问它的上一层或下一层特征。
+
+我们 Mask RCNN 的实现采用的是 ResNet101 + FPN 作为骨干网络。
+
+>**代码提示：**
+*FPN 的构建是在 ResNet 的创建之后，在 [MaskRCNN.build()](https://github.com/matterport/Mask_RCNN/blob/master/mrcnn/model.py#L1840) 方法中实现。
+常规的骨干网络会输出单独一组特征矩阵，与此相比，RPN 会在新增金字塔的每一层分别产生一组特征矩阵。在使用中，我们会根据物体像素尺寸，动态地选择使用哪一组特征矩阵。在后面的文章中，我会直接描述成骨干网络的特征矩阵输出。但是请记住，使用 FPN 时，我们会得到多组特征矩阵输出，而我们会在其中挑选一组使用。*
 
 ## 2. 区域方案网络 (Region Proposal Network 下面简称 RPN )
 ![rpn](https://cdn-images-1.medium.com/max/600/1*ESpJx0XLvyBa86TNo2BfLQ.png)
