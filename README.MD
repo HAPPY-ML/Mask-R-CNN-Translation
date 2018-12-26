@@ -84,24 +84,54 @@ RPN 会为每个锚点生成两个输出:
 
 ## 一起来构造一个颜色渲染滤镜
 和其他大多数有图片滤镜的图片编辑应用不同的是，我们的滤镜加了点人工智能，会更聪明一点：它会自动地找到特定的物体。如果你将这个滤镜在视频中使用，而不是单单一张图片，甚至会更有效果。
-![效果图](https://cdn-images-1.medium.com/max/1200/1*lAP6vX1tLQaxFn6XGEQ32g.gif)
+![效果图](/images/1_lAP6vX1tLQaxFn6XGEQ32g.gif)
 
-#### 1. Training Dataset
+#### 1. 训练数据集
 一般来说，我会从搜索包含我需要的物体的公开数据集开始。但在这个示例中，我想要把这个过程都记录夏日，以展示如何从零开始中构建一个数据集。
 我从 `flickr` 中搜索关于气球的图片，并且这些图片是限定在"商业用户 & 允许修改"的许可证下。这个搜索结果得到的图片已经能满足我的需求了。我一共挑选了75张图片，并且它们分成训练集以及验证集。找图片是挺简单的事情，但标注图片才是艰难的部分。
 ![search](https://cdn-images-1.medium.com/max/1600/1*Q4tCdhwrklvJLM9zn5aDhg.png)
-等等，难道我们不是应该需要上百万的图片去训练深度学习模型的吗？有时候，你确实需要如此，但是更多情况下，你并不需要这么多图片。我主要依靠下面两个技巧来显著地降低训练要求。
-第一个技巧：迁移学习。简单来说，不是使用从零训练一个模型，而是已经在 `COCO dataset`中训练得到的模型参数中开始训练（我们在 `github` 代码库中有提供）。
-Wait! Don’t we need, like, a million images to train a deep learning model? Sometimes you do, but often you don’t. I’m relying on two main points to reduce my training requirements significantly:
+等等，难道我们不是应该需要上百万的图片去训练深度学习模型的吗？有时候，你确实需要如此，但是更多情况下，你并不需要这么多图片。我主要依靠下面两点来显著地降低训练要求。
 
-First, transfer learning. Which simply means that, instead of training a model from scratch, I start with a weights file that’s been trained on the COCO dataset (we provide that in the github repo). Although the COCO dataset does not contain a balloon class, it contains a lot of other images (~120K), so the trained weights have already learned a lot of the features common in natural images, which really helps. And, second, given the simple use case here, I’m not demanding high accuracy from this model, so the tiny dataset should suffice.
+ 第一点：**迁移学习**。
+简单来说，不是使用从零训练一个模型，而是已经使用 `COCO` 数据集训练得到的模型参数中开始训练（我们在 `github` 代码库中有提供）。即使 `COCO`数据集中并不包含气球这一类型，但它包含了其他类型的图片（约 120K ）,这些图片训练得来的参数已经学习到了很多在自然图片中常见的特征，而这些特征是非常有用的。
 
-There are a lot of tools to annotate images. I ended up using VIA (VGG Image Annotator) because of its simplicity. It’s a single HTML file that you download and open in a browser. Annotating the first few images was very slow, but once I got used to the user interface, I was annotating at around an object a minute.
-## Loading the Dataset
+第二点：这里只是给出简单的使用示例，所以在这个模型中我并不需要很高的精准度，所以，小小的数据集应该就能满足这一点了。
+
+有非常多的工具能标注图片。我最终决定使用 `VIA`(`VGG Image Annotator`),因为它的简单性。它只需要下载一些 `HTML`文件，然后在浏览器中打开即可。一开始标注数据会非常慢，但是之后我熟悉了它的界面，标注一个气球的时间久只需大概需要一分钟。
+
+如果你不喜欢使用`VIA`工具，下面还有一些我测试过的标注工具：
+[`LAbelMe`](http://labelme.csail.mit.edu/): 一个最出名的标注工具，但是它的UI响应速度有点慢，特别是在放大大尺寸图片的时候。 
+`RectLabel`: 更大型的标注项目来说，是非常棒的。针对标注任务的不同类型，有多种可选项
+`LabelBox`: 对更大有点的标注项目来说，是非常实用的。它有针对不同类型标注任务的选项设置。
+`VGG Image Annotator (VIA)`: 快速，轻量，设计相当好。这是我最终决定使用的工具。
+`COCO UI`: 这个工具过去常常用来标注 `COCO` 数据集。
 
 
+## 加载数据集 
+现在并没有通用的格式去存储分割掩码，有些数据集将它们保存为 PNG 图片，有些把它们保存为多边形的坐标点。为了处理这种情况，我们的方案是提供一个 `Dataset` 类，你去继承它，然后复写一些方法去读取你所遇到的数据。
+`VIA` 工具将标注数据保存在一个 `JSON`文件中，每一个掩码都是多边形坐标点集合。虽然我没有找到这种格式的说明文档，但是通过查看生成的`JSON`文件，你很容易就能搞清楚是怎么回事。我在代码中添加了注释，以说明这些数据的转换是如何完成的。
+> 代码提示：
+一个最简单的读取新数据集的方式就是：复制[`coco.py`](https://github.com/matterport/Mask_RCNN/blob/master/samples/coco/coco.py),然后根据你的需求去修改它。[`balloons.py`](https://github.com/matterport/Mask_RCNN/blob/v2.1/samples/balloon/balloon.py)就是这么做得到的。
 
-## Verify the Dataset
+我的`BalloonDataset`类就像是这样的： 
+```
+class BalloonDataset(utils.Dataset):
+    def load_balloons(self, dataset_dir, subset):
+        ...
+    def load_mask(self, image_id):
+        ...
+    def image_reference(self, image_id):
+        ...
+```
+`load_balloons`是用来读取 `JSON`文件，提取标注数据，以及递归地调用`add_class` 和`add_image`内部方法以构建数据集。
+
+`load_mask` 会通过绘制多边形，为图片中每个气球生成 `bitmap` 掩码。
+load_mask generates bitmap masks for every object in the image by drawing the polygons.
+`image_reference`只是简单地为每张图片返回作为一个唯一标识的字符串，目的是为了 debug 。这个字符串其实就是图片文件名。
+
+你也许注意到了我的类中没有包含加载图片或返回边界框的方法。其实用于加载图片的`load_image`方法已经在基类`Dataset`中有实现了。而边界框是动态地从掩码中生成的。
+
+## 校验数据Verify the Dataset
 
 ## Configurations
 
