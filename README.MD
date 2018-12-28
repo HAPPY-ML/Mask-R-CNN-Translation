@@ -89,7 +89,7 @@ RPN 会为每个锚点生成两个输出:
 #### 1. 训练数据集
 一般来说，我会从搜索包含我需要的物体的公开数据集开始。但在这个示例中，我想要把这个过程都记录夏日，以展示如何从零开始中构建一个数据集。
 我从 `flickr` 中搜索关于气球的图片，并且这些图片是限定在"商业用户 & 允许修改"的许可证下。这个搜索结果得到的图片已经能满足我的需求了。我一共挑选了75张图片，并且它们分成训练集以及验证集。找图片是挺简单的事情，但标注图片才是艰难的部分。
-![search](https://cdn-images-1.medium.com/max/1600/1*Q4tCdhwrklvJLM9zn5aDhg.png)
+![search](./images/1_Q4tCdhwrklvJLM9zn5aDhg.png)
 等等，难道我们不是应该需要上百万的图片去训练深度学习模型的吗？有时候，你确实需要如此，但是更多情况下，你并不需要这么多图片。我主要依靠下面两点来显著地降低训练要求。
 
  第一点：**迁移学习**。
@@ -98,7 +98,7 @@ RPN 会为每个锚点生成两个输出:
 第二点：这里只是给出简单的使用示例，所以在这个模型中我并不需要很高的精准度，所以，小小的数据集应该就能满足这一点了。
 
 有非常多的工具能标注图片。我最终决定使用 `VIA`(`VGG Image Annotator`),因为它的简单性。它只需要下载一些 `HTML`文件，然后在浏览器中打开即可。一开始标注数据会非常慢，但是之后我熟悉了它的界面，标注一个气球的时间久只需大概需要一分钟。
-
+![label](./images/1_6SICkQA-YCLp88A7GFM4Ag.png)
 如果你不喜欢使用`VIA`工具，下面还有一些我测试过的标注工具：
 1. [`LAbelMe`](http://labelme.csail.mit.edu/): 一个最出名的标注工具，但是它的UI响应速度有点慢，特别是在放大大尺寸图片的时候。
 
@@ -136,13 +136,52 @@ load_mask generates bitmap masks for every object in the image by drawing the po
 
 你也许注意到了我的类中没有包含加载图片或返回边界框的方法。其实用于加载图片的`load_image`方法已经在基类`Dataset`中有实现了。而边界框是动态地从掩码中生成的。
 
-## 校验数据Verify the Dataset
+## 校验数据
+为了校验实现的代码是否正确，我新建了一个`Juyter notebook`。这个文件会加载数据集，能可视化掩码以及边界框，以及能看到锚点已校验我的锚点尺寸是否匹配我要检测物体的尺寸，下面的日子是你期待看到的：
+![example](./images/1_OKE6wyZFfh2f_aZ3rd9BRw.png)
 
-## Configurations
+> **代码提示：**
+为了创建这个 `notebook`,我复制了[`inspect_data.ipynb`](https://github.com/matterport/Mask_RCNN/blob/master/samples/coco/inspect_data.ipynb),然后修改顶部的代码块去加载气球数据集。
 
-## Training
 
-## Inspecting the Results
+## 配置文件 
+这个项目的配置参数和用来训练 `COCO`数据集的配置是相似的，所以我只需要复写三个参数而已。当我写 `Dataset`类时，我集成了Config基类，然后复写了下面的内容：
+```
+class BalloonConfig(Config):
+    # Give the configuration a recognizable name
+    NAME = "balloons"
+    # Number of classes (including background)
+    NUM_CLASSES = 1 + 1  # Background + balloon
+    # Number of training steps per epoch
+    STEPS_PER_EPOCH = 100
+```
+基本的配置使用了尺寸为 1024x1024 px 的输入图片，这是为了最好的准确度。我也沿用了这个配置，虽然我训练的图片尺寸会稍微小一点，但是模型会自动调整图片大小
+> **代码提示：**
+基础配置类在  [config.py](https://github.com/matterport/Mask_RCNN/blob/master/mrcnn/config.py) 文件中，而`BalloonConfig` 在 [balloons.py](https://github.com/matterport/Mask_RCNN/blob/v2.1/samples/balloon/balloon.py#L61) 文件中
+
+## 训练
+`Mask R-CNN`是一个相当大的模型，特别是我们使用了 `ResNet101`以及 `FPN` 来实现它。所以你需要有 12G 内存的先进 GPU 。当然内存小一点也可能行，但是我没有试过。我使用了 `Amazon` P2实例去训练模型，因为数据集比较小，训练时间只花了不到一个小时。
+在`balloon`目录下，使用下面的命令行开始训练，这里我们应该从`COCO`预训练模型参数开始，代码会自动从我们仓库下载这个参数：
+```
+python3 balloon.py train --dataset=/path/to/dataset --model=coco
+```
+从终止训练后，再恢复训练的命令行：
+```
+python3 balloon.py train --dataset=/path/to/dataset --model=last
+```
+> **代码提示：**
+除了 [balloons.py](https://github.com/matterport/Mask_RCNN/blob/v2.1/samples/balloon/balloon.py) 外，代码库中还有其他三个示例。
+>  [train_shapes.ipynb](https://github.com/matterport/Mask_RCNN/blob/master/samples/shapes/train_shapes.ipynb):训练用户检测几何图形的一个玩具模型
+> [coco.py](https://github.com/matterport/Mask_RCNN/blob/master/samples/coco/coco.py) : 用于训练 `COCO`数据集
+>[nucleus.py](https://github.com/matterport/Mask_RCNN/tree/master/samples/nucleus) :在显微镜图片中分割识别细胞核
+
+
+## 检测模型结果 
+[inspect_balloon_model](https://github.com/matterport/Mask_RCNN/blob/v2.1/samples/balloon/inspect_balloon_model.ipynb) notebook 会显示模型生成的结果。在 notebook 中会看到更多可视化的东西，同时还能一步一步地了解到检测识别过程。
+> **代码提示：**
+ [inspect_mode.ipynb](https://github.com/matterport/Mask_RCNN/blob/master/samples/coco/inspect_model.ipynb) 提供了对 `COCO`数据集的可视化以及`debug`的代码，而 [inspect_balloon_model.ipynb](https://github.com/matterport/Mask_RCNN/blob/v2.1/samples/balloon/inspect_balloon_model.ipynb) 只是 [inspect_mode.ipynb](https://github.com/matterport/Mask_RCNN/blob/master/samples/coco/inspect_model.ipynb) 的简化版本
+
+
 
 ## Color Splash
 
