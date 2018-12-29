@@ -54,7 +54,7 @@ Mask R-CNN (Regional Convolutional Neural Network: 区域卷积神经网络)，�
 *FPN 的构建是在 ResNet 的创建之后，在 [MaskRCNN.build()](https://github.com/matterport/Mask_RCNN/blob/master/mrcnn/model.py#L1840) 方法中实现。
 常规的骨干网络会输出单独一组特征矩阵，与此相比，RPN 会在新增金字塔的每一层分别产生一组特征矩阵。在使用中，我们会根据物体像素尺寸，动态地选择使用哪一组特征矩阵。在后面的文章中，我会直接描述成骨干网络的特征矩阵输出。但是请记住，使用 FPN 时，我们会得到多组特征矩阵输出，而我们会在其中挑选一组使用。*
 
-## 2. 区域建议网络 (Region Proposal Network 下面简称 RPN )
+## 2. 区域提议网络 (Region Proposal Network 下面简称 RPN )
 ![rpn](https://cdn-images-1.medium.com/max/600/1*ESpJx0XLvyBa86TNo2BfLQ.png)
 
 RPN 是一个通过使用滑动窗口方式扫描图片，以挖掘出含有物体区域的轻量级神经网络。
@@ -72,7 +72,7 @@ RPN 会为每个锚点生成两个输出:
 2. 精细的边界框：一个前景锚点（也可以叫正极锚点）可能不会非常完美地定位在检测物体的中心位置上，所以 RPN 会估计一个估算出一个增量（ delta ，即针对矩形的x ,y , width , height 的百分比 ）来修正锚点盒子（ anchor box ）以更好地贴合检测物体。
 
 ![ Anchor Class](https://cdn-images-1.medium.com/max/600/1*EMNE8bxOT4RI3HMjIqjCwQ.png)
-在 RPN 预测过程中，我们会选择最可能包含物体的锚点，然后去修正它们的位置以及尺寸。如果有些锚点重叠得太多，我们会保留前景得分最高的一个，而其他的锚点就丢弃掉（这种方式成为非最大抑制 Non-max Suppression ）。在我们得到最终的建议（也就是我们感兴趣的区域 regions of interest,简称 ROI）之后，我们就能进入下一阶段。
+在 RPN 预测过程中，我们会选择最可能包含物体的锚点，然后去修正它们的位置以及尺寸。如果有些锚点重叠得太多，我们会保留前景得分最高的一个，而其他的锚点就丢弃掉（这种方式成为非最大抑制 Non-max Suppression ）。在我们得到最终的提议区域（也就是我们感兴趣的区域 regions of interest,简称 ROI）之后，我们就能进入下一阶段。
 
 > **代码提示:**
 `ProposalLayer` 是使用自定义的 Keras 层构建的， 用来读取 RPN的输出结果，选择得分最高的锚点以及进行边界框修正。
