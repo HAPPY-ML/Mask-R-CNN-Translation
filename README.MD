@@ -194,16 +194,15 @@ python3 balloon.py train --dataset=/path/to/dataset --model=last
 ## 答疑：
 *  **问题：** 我想要深入探索，理解其中的细节，我应该看什么内容呢？
 **回答：** 可以按照整个顺序阅读这几篇论文：[RCNN (pdf)](http://citeseerx.ist.psu.edu/viewdoc/download;jsessionid=AF8817DD0F70B32AA08B2ECBBA8099FA?doi=10.1.1.715.2453&rep=rep1&type=pdf) , [Fast RCNN](https://arxiv.org/abs/1504.08083), [Faster RCNN](https://arxiv.org/abs/1506.01497), [FPN](https://arxiv.org/abs/1612.03144),[ Mask RCNN](https://arxiv.org/abs/1703.06870)。
-</br>
 * **问题：**  我可以在哪里提更多的问题呢？
 **回答：** 在 [Issues page on GitHub](https://github.com/matterport/Mask_RCNN/issues) 页面中，大家都挺活跃的，你可以在这里提问题，同时也可以报告 issue。也可以先搜索一下已经关闭的 issue ，万一你的问题别人已经提过而我们恰好也回答了呢？
-</br>
+
 * **问题：** 我可以为这个项目做贡献吗？
 **回答：** 这太好了，欢迎 `Pull Request`
-</br>
+
 * **问题：** 我可以加入你的团队，做像这样有趣的项目吗？
 **回答：** 可以，我们在招聘关于 `deep learning`以及 `computer version` 相关的岗位，可以在这个[网站](https://matterport.com/careers/)上申请职位。
-</br>
+
 >**译者介绍：**
 [Xxxxxb_](https://github.com/XiongbinZhao) ：加拿大多伦多大学计算机硕士毕业，目前就职于百度。
 [GoodWillHunting_D](https://github.com/diaoxinqiang): 深度学习入门中，公司K12项目在深度应用该框架。
