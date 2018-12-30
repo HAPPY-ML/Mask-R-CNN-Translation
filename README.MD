@@ -203,8 +203,8 @@ python3 balloon.py train --dataset=/path/to/dataset --model=last
 * **问题：** 我可以加入你的团队，做像这样有趣的项目吗？
 **回答：** 可以，我们在招聘关于 `deep learning`以及 `computer version` 相关的岗位，可以在这个[网站](https://matterport.com/careers/)上申请职位。
 
->**译者介绍：**
-[Xxxxxb_](https://github.com/XiongbinZhao) ：加拿大多伦多大学计算机硕士毕业，目前就职于百度。
-[GoodWillHunting_D](https://github.com/diaoxinqiang): 深度学习入门中，公司K12项目在深度应用该框架。
-**翻译目的：** 
+> **译者介绍：**
+> [Xxxxxb_](https://github.com/XiongbinZhao) ：加拿大多伦多大学计算机硕士毕业，目前就职于百度。
+> [GoodWillHunting_D](https://github.com/diaoxinqiang): 深度学习入门中，公司K12项目在深度应用该框架。
+> **翻译目的：** 
 让更多人有机会了解以及应用 Mask_RCNN 这么优秀的神经网络，并且该项目非常适合动手入门。同时，Mask_RCNN 论文（2017年 ICCV Best Paper Award ），第一作者是广东人 [**何凯明**](http://kaiminghe.com/)大神， [Xxxxxb_](https://github.com/XiongbinZhao)和我也是广东人，算是一种缘分。
