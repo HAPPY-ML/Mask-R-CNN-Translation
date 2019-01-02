@@ -72,6 +72,8 @@ RPN 会为每个锚点生成两个输出:
 2. 精细的边界框：一个前景锚点（也可以叫正极锚点）可能不会非常完美地定位在检测物体的中心位置上，所以 RPN 会估计一个估算出一个增量（ delta ，即针对矩形的x ,y , width , height 的百分比 ）来修正锚点盒子（ anchor box ）以更好地贴合检测物体。
 
 ![ Anchor Class](https://cdn-images-1.medium.com/max/600/1*EMNE8bxOT4RI3HMjIqjCwQ.png)
+
+
 在 RPN 预测过程中，我们会选择最可能包含物体的锚点，然后去修正它们的位置以及尺寸。如果有些锚点重叠得太多，我们会保留前景得分最高的一个，而其他的锚点就丢弃掉（这种方式成为非最大抑制 Non-max Suppression ）。在我们得到最终的提议区域（也就是我们感兴趣的区域 regions of interest,简称 ROI）之后，我们就能进入下一阶段。
 
 > **代码提示:**
@@ -204,7 +206,12 @@ python3 balloon.py train --dataset=/path/to/dataset --model=last
 **回答：** 可以，我们在招聘关于 `deep learning`以及 `computer version` 相关的岗位，可以在这个[网站](https://matterport.com/careers/)上申请职位。
 
 > **译者介绍：**
+
 > [Xxxxxb_](https://github.com/XiongbinZhao) ：加拿大多伦多大学计算机硕士毕业，目前就职于百度。
+
+
 > [GoodWillHunting_D](https://github.com/diaoxinqiang): 深度学习入门中，公司K12项目在深度应用该框架。
+
+
 > **翻译目的：** 
 让更多人有机会了解以及应用 Mask_RCNN 这么优秀的神经网络，并且该项目非常适合动手入门。同时，Mask_RCNN 论文（2017年 ICCV Best Paper Award ），第一作者是广东人 [**何凯明**](http://kaiminghe.com/)大神， [Xxxxxb_](https://github.com/XiongbinZhao)和我也是广东人，算是一种缘分。
