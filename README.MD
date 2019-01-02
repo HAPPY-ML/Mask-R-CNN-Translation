@@ -1,9 +1,6 @@
 # 实例分割 - 基于 Mask R-CNN 和 TensorFlow
 
-
-[Temp Source](https://engineering.matterport.com/splash-of-color-instance-segmentation-with-mask-r-cnn-and-tensorflow-7c761e238b46)
-
-今年11月，我们开源了我们对 [Mask R-CNN 实现源码](https://github.com/matterport/Mask_RCNN)。自那以后，我们的项目被fork了1400次，同时被应用在多个项目中，并且有许多的开发者对项目源码作出了改进。同时，我们也收到了许多关于我们项目的问题，所以在这篇文章中，我将阐述一下我们对 Mask R-CNN 的实现细节并展示它在实际项目中的应用。
+今年11月，我们开源了我们对 [Mask R-CNN 的实现源码](https://github.com/matterport/Mask_RCNN)。自那以后，我们的项目被fork了1400次，同时被应用在多个项目中，并且有许多的开发者对项目源码作出了改进。同时，我们也收到了许多关于我们项目的问题，所以在这篇文章中，我将阐述一下我们对 Mask R-CNN 的实现细节并展示它在实际项目中的应用。
 
 本篇文章将覆盖以下两个内容：
 1. Mask R-CNN 的概述。 
@@ -73,16 +70,41 @@ RPN 会为每个锚点生成两个输出:
 
 ![ Anchor Class](https://cdn-images-1.medium.com/max/600/1*EMNE8bxOT4RI3HMjIqjCwQ.png)
 
-
 在 RPN 预测过程中，我们会选择最可能包含物体的锚点，然后去修正它们的位置以及尺寸。如果有些锚点重叠得太多，我们会保留前景得分最高的一个，而其他的锚点就丢弃掉（这种方式成为非最大抑制 Non-max Suppression ）。在我们得到最终的提议区域（也就是我们感兴趣的区域 regions of interest,简称 ROI）之后，我们就能进入下一阶段。
 
 > **代码提示:**
 `ProposalLayer` 是使用自定义的 Keras 层构建的， 用来读取 RPN的输出结果，选择得分最高的锚点以及进行边界框修正。
-## 3. ROI Classifier & Bounding Box Regressor
 
-### ROI Pooling
+## 3. 感兴趣区域(ROI)分类器 与 边界框回归器
+在这一步，我们将处理由上一步 RPN 输出的感兴趣区域(ROIs)。和 RPN 类似，这一步骤将为每个感兴趣区域产生以下两个输出：
+![stage 2](https://cdn-images-1.medium.com/max/2000/1*xQYuM_9mu5kt8nNN8Ms2TQ.png)
 
-## 4. Segmentation Masks
+1. **类型：** 感兴趣区域中物体的类型。和 RPN 输出的前景和背景类型不一样的是，这一层网络有能力去将区域分类成具体的类型（人、车、椅子...等等）。这一层同样有可能会生成背景类型的物体，背景类型会导致该感兴趣区域被去除掉。
+
+2. **边界框优化：** 和 RPN 中的边界框的处理很相似，它的作用主要是进一步的优化边界框的位置和尺寸，以至于能更准确地包含物体。
+
+> 代码提示：
+> 分类器与边界框回归器在 [fpn_classifier_graph()](https://github.com/matterport/Mask_RCNN/blob/master/mrcnn/model.py#L901) 中创建。
+
+### 感兴趣区域池化 (ROI Pooling)
+不过，进行这一步之前，我们需要先解决一个小问题。这一步的分类器通常要求输入是一个固定的尺寸，它并不能很好地处理不同尺寸的输入。然而，在 RPN 中的边界框优化步骤中，感兴趣区域会有不一样的尺寸。因为这个原因，我们需要引入 ROI Pooling。
+![ROI Pooling](https://cdn-images-1.medium.com/max/1600/1*bsT00ickNk7vaRJNrTvKPQ.png)
+*为了更好地说明，图片中展示的是低层级的特征图。*
+
+感兴趣区域池化(ROI Pooling)，是指将特征图的一部分进行裁剪并转变成一个固定的尺寸。原理上和裁剪图片并改变图片尺寸一样（但两者在实现的细节上有差别）。
+
+Mask R-CNN 的作者推荐一个叫 ROIAlign 的方法，对特征图在不同点进行取样并进行双线性插值。在我们的实现中，我们使用了 TensorFlow 中的 [crop_and_resize](https://www.tensorflow.org/api_docs/python/tf/image/crop_and_resize) 方法，因为这样更加简洁而且能满足大部分的需求。
+
+>代码提示：感兴趣区域池化 (ROI Pooling) 的相关实现在 [PyramidROIAlign](https://github.com/matterport/Mask_RCNN/blob/master/mrcnn/model.py#L344) 中。
+
+## 4. 图片分割蒙层
+完成上一个章节的步骤，我们得到了一个可实现物体检测的 [Faster R-CNN](https://arxiv.org/abs/1506.01497) 框架。下面介绍的蒙层网络是 Mask R-CNN 论文里面额外介绍的功能实现。
+
+![SegmentationMasks](https://cdn-images-1.medium.com/max/600/1*l55WzUq1ZD2b5EGwW05LDA.png)
+
+蒙层的分支是一个卷积网络。这个卷积网络将 感兴趣区域分类器 里面选择出来的正确区域作为输入，并生成分辨率为 28px*28px 的蒙层。虽然生成的蒙层分辨率低，但是他们为浮点类型，所以比 binary mask 能储存更多的细节信息。同时，小的蒙层尺寸可以保证蒙层分支的轻量。在训练时，我们会将真实的蒙层缩小至 28px*28px，用来计算损失。然后在推断的过程中，我们把预算的蒙层放大成 ROI 边界框的大小，以此来得到每一个物体的蒙层。
+
+>代码提示：蒙层分支的相关代码在 [build_fpn_mask_graph()](https://github.com/matterport/Mask_RCNN/blob/master/mrcnn/model.py#L957) 中。
 
 ## 一起来构造一个颜色渲染滤镜
 和其他大多数有图片滤镜的图片编辑应用不同的是，我们的滤镜加了点人工智能，会更聪明一点：它会自动地找到特定的物体。如果你将这个滤镜在视频中使用，而不是单单一张图片，甚至会更有效果。
