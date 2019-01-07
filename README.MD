@@ -86,8 +86,6 @@ RPN 会为每个锚点生成两个输出:
 > 代码提示：
 >  类器与边界框回归器时在[fpn_classifier_graph()](https://github.com/matterport/Mask_RCNN/blob/master/mrcnn/model.py#L901) 方法中创建的。
 
-ROI Pooling
-There is a bit of a problem to solve before we continue. Classifiers don’t handle variable input size very well. They typically require a fixed input size. But, due to the bounding box refinement step in the RPN, the ROI boxes can have different sizes. That’s where ROI Pooling comes into play.
 ### 感兴趣区域的池化 (ROI Pooling)
 在进行感兴趣区域分类之前，我们需要先解决一个小问题：因为这一步的分类器通常要求的输入是一个固定的尺寸，它并不能很好地处理不同尺寸的输入。然而，在 RPN 中的边界框优化步骤中，感兴趣区域会有不一样的尺寸。因为这个原因，我们需要引入 ROI Pooling。
 ![ROI Pooling](https://cdn-images-1.medium.com/max/1600/1*bsT00ickNk7vaRJNrTvKPQ.png)
