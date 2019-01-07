@@ -73,7 +73,7 @@ RPN 会为每个锚点生成两个输出:
 在 RPN 预测过程中，我们会选择最可能包含物体的锚点，然后去修正它们的位置以及尺寸。如果有些锚点重叠得太多，我们会保留前景得分最高的一个，而其他的锚点就丢弃掉（这种方式成为非最大抑制 Non-max Suppression ）。在我们得到最终的提议区域（也就是我们感兴趣的区域 regions of interest,简称 ROI）之后，我们就能进入下一阶段。
 
 > **代码提示:**
-`ProposalLayer` 是使用自定义的 Keras 层构建的， 用来读取 RPN的输出结果，选择得分最高的锚点以及进行边界框修正。
+> [`ProposalLayer`](https://github.com/matterport/Mask_RCNN/blob/master/mrcnn/model.py#L255) 是使用自定义的 Keras 层构建的， 用来读取 RPN的输出结果，选择得分最高的锚点以及进行边界框修正。
 
 ## 3. 感兴趣区域(ROI)分类器 与 边界框回归器
 在这一步，我们将处理由上一步 RPN 输出的感兴趣区域(ROIs)。和 RPN 类似，这一步骤将为每个感兴趣区域产生以下两个输出：
