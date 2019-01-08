@@ -201,8 +201,8 @@ python3 balloon.py train --dataset=/path/to/dataset --model=last
 >[nucleus.py](https://github.com/matterport/Mask_RCNN/tree/master/samples/nucleus) :在显微镜图片中分割识别细胞核
 
 
-## 检测模型结果 
-[inspect_balloon_model](https://github.com/matterport/Mask_RCNN/blob/v2.1/samples/balloon/inspect_balloon_model.ipynb) notebook 会显示模型训练后的结果。在 notebook 中可以看到更多的训练结果细节，并且同时还能按步骤了解到检测识别的过程。
+## 模型训练结果 
+[inspect_balloon_model](https://github.com/matterport/Mask_RCNN/blob/v2.1/samples/balloon/inspect_balloon_model.ipynb) notebook 会显示模型训练后的结果。在 notebook 中可以看到训练结果的细节，并且同时还能按步骤了解到检测识别的过程。
 ![result](./images/1_BvqnziHW514YyO20UNtS3g.png)
 > **代码提示：**
  [inspect_mode.ipynb](https://github.com/matterport/Mask_RCNN/blob/master/samples/coco/inspect_model.ipynb) 提供了对 `COCO`数据集的可视化以及`debug`的代码，而 [inspect_balloon_model.ipynb](https://github.com/matterport/Mask_RCNN/blob/v2.1/samples/balloon/inspect_balloon_model.ipynb) 只是 [inspect_mode.ipynb](https://github.com/matterport/Mask_RCNN/blob/master/samples/coco/inspect_model.ipynb) 的简化版本
