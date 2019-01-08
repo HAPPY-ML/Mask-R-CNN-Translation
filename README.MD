@@ -202,7 +202,7 @@ python3 balloon.py train --dataset=/path/to/dataset --model=last
 
 
 ## 检测模型结果 
-[inspect_balloon_model](https://github.com/matterport/Mask_RCNN/blob/v2.1/samples/balloon/inspect_balloon_model.ipynb) notebook 会显示模型生成的结果。在 notebook 中会看到更多可视化的东西，同时还能一步一步地了解到检测识别过程。
+[inspect_balloon_model](https://github.com/matterport/Mask_RCNN/blob/v2.1/samples/balloon/inspect_balloon_model.ipynb) notebook 会显示模型训练后的结果。在 notebook 中可以看到更多的训练结果细节，并且同时还能按步骤了解到检测识别的过程。
 ![result](./images/1_BvqnziHW514YyO20UNtS3g.png)
 > **代码提示：**
  [inspect_mode.ipynb](https://github.com/matterport/Mask_RCNN/blob/master/samples/coco/inspect_model.ipynb) 提供了对 `COCO`数据集的可视化以及`debug`的代码，而 [inspect_balloon_model.ipynb](https://github.com/matterport/Mask_RCNN/blob/v2.1/samples/balloon/inspect_balloon_model.ipynb) 只是 [inspect_mode.ipynb](https://github.com/matterport/Mask_RCNN/blob/master/samples/coco/inspect_model.ipynb) 的简化版本
