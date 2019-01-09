@@ -201,31 +201,29 @@ python3 balloon.py train --dataset=/path/to/dataset --model=last
 >[nucleus.py](https://github.com/matterport/Mask_RCNN/tree/master/samples/nucleus) :在显微镜图片中分割识别细胞核
 
 
-## 检测模型结果 
-[inspect_balloon_model](https://github.com/matterport/Mask_RCNN/blob/v2.1/samples/balloon/inspect_balloon_model.ipynb) notebook 会显示模型生成的结果。在 notebook 中会看到更多可视化的东西，同时还能一步一步地了解到检测识别过程。
+## 模型训练结果 
+[inspect_balloon_model](https://github.com/matterport/Mask_RCNN/blob/v2.1/samples/balloon/inspect_balloon_model.ipynb) notebook 会显示模型训练后的结果。在 notebook 中可以看到训练结果的细节，并且同时还能按步骤了解到检测识别的过程。
 ![result](./images/1_BvqnziHW514YyO20UNtS3g.png)
 > **代码提示：**
  [inspect_mode.ipynb](https://github.com/matterport/Mask_RCNN/blob/master/samples/coco/inspect_model.ipynb) 提供了对 `COCO`数据集的可视化以及`debug`的代码，而 [inspect_balloon_model.ipynb](https://github.com/matterport/Mask_RCNN/blob/v2.1/samples/balloon/inspect_balloon_model.ipynb) 只是 [inspect_mode.ipynb](https://github.com/matterport/Mask_RCNN/blob/master/samples/coco/inspect_model.ipynb) 的简化版本
 
-
-
-## 颜色渲染滤镜 
-最后，我们有了掩码(即物体轮廓)，所以我们可以通过它们做出颜色滤镜效果。这个方法相当的简单：创建一个图片的灰度图，然后在有掩码位置的区域标记出来，将原始图片的色彩像素拷贝到这些区域中。下面是效果图：
+## 色彩滤镜 
+最终我们会得到物体的形状蒙版，可以通过它们做出色彩滤镜的效果。使用方法很简单：将一张带色彩的图片转化成灰度图，然后利用物体的形状蒙版把物体识别标记出来，接着从带色彩的原始图片中将色彩映射过来。下面是效果图：
 ![effect](./images/1_iPAtWFnShPhX5atbY3V0pQ.png)
 
 > **代码提示：**
-做出这种效果的方法是在 [color_splash()](https://github.com/matterport/Mask_RCNN/blob/v2.1/samples/balloon/balloon.py#L201) ，而 [detect_and_color_splash()](https://github.com/matterport/Mask_RCNN/blob/v2.1/samples/balloon/balloon.py#L221) 方法是用来处理加载图片，进行实例分割，以及应用颜色滤镜的整个流程。
+做出这种效果是 [color_splash()]的方法(https://github.com/matterport/Mask_RCNN/blob/v2.1/samples/balloon/balloon.py#L201) ，而 [detect_and_color_splash()](https://github.com/matterport/Mask_RCNN/blob/v2.1/samples/balloon/balloon.py#L221) 方法是用来处理加载图片，进行实例分割，以及应用色彩滤镜的整个流程。
 
 ## 答疑：
-*  **问题：** 我想要深入探索，理解其中的细节，我应该看什么内容呢？
+*  **问题：** 我想要更深入探索并且理解其中的细节，我应该看什么内容呢？
 **回答：** 可以按照整个顺序阅读这几篇论文：[RCNN (pdf)](http://citeseerx.ist.psu.edu/viewdoc/download;jsessionid=AF8817DD0F70B32AA08B2ECBBA8099FA?doi=10.1.1.715.2453&rep=rep1&type=pdf) , [Fast RCNN](https://arxiv.org/abs/1504.08083), [Faster RCNN](https://arxiv.org/abs/1506.01497), [FPN](https://arxiv.org/abs/1612.03144),[ Mask RCNN](https://arxiv.org/abs/1703.06870)。
-* **问题：**  我可以在哪里提更多的问题呢？
+* **问题：**  我有许多问题可以在哪里提问呢？
 **回答：** 在 [Issues page on GitHub](https://github.com/matterport/Mask_RCNN/issues) 页面中，大家都挺活跃的，你可以在这里提问题，同时也可以报告 issue。也可以先搜索一下已经关闭的 issue ，万一你的问题别人已经提过而我们恰好也回答了呢？
 
 * **问题：** 我可以为这个项目做贡献吗？
-**回答：** 这太好了，欢迎 `Pull Request`
+**回答：** 这太好了，非常欢迎你 `Pull Request`
 
-* **问题：** 我可以加入你的团队，做像这样有趣的项目吗？
+* **问题：** 我可以加入你的团队，做这样有趣又有意义的项目吗？
 **回答：** 可以，我们在招聘关于 `deep learning`以及 `computer version` 相关的岗位，可以在这个[网站](https://matterport.com/careers/)上申请职位。
 
 > **译者介绍：**
