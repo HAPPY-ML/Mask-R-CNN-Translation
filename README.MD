@@ -138,8 +138,8 @@ Mask R-CNN 的作者提出了一种叫 ROIAlign 的方法，这个方法会在�
 
 
 ## 加载数据集 
-现在并没有通用的格式去存储分割掩码，有些数据集将它们保存为 PNG 图片，有些把它们保存为多边形的坐标点。为了处理这种情况，我们的方案是提供一个 `Dataset` 类，你去继承它，然后复写一些方法去读取你所遇到的数据。
-`VIA` 工具将标注数据保存在一个 `JSON`文件中，每一个掩码都是多边形坐标点集合。虽然我没有找到这种格式的说明文档，但是通过查看生成的`JSON`文件，你很容易就能搞清楚是怎么回事。我在代码中添加了注释，以说明这些数据的转换是如何完成的。
+现在并没有通用的格式去存储分割蒙层，有些数据集将它们保存为 PNG 图片，有些把它们保存为多边形的坐标点。为了处理这种情况，我们的方案是提供一个 `Dataset` 类，你去继承它，然后复写一些方法去读取你所遇到的数据。
+`VIA` 工具将标注数据保存在一个 `JSON`文件中，每一个蒙层都是多边形坐标点集合。虽然我没有找到这种格式的说明文档，但是通过查看生成的`JSON`文件，你很容易就能搞清楚是怎么回事。我在代码中添加了注释，以说明这些数据的转换是如何完成的。
 > 代码提示：
 一个最简单的读取新数据集的方式就是：复制[`coco.py`](https://github.com/matterport/Mask_RCNN/blob/master/samples/coco/coco.py),然后根据你的需求去修改它。[`balloons.py`](https://github.com/matterport/Mask_RCNN/blob/v2.1/samples/balloon/balloon.py)就是这么做得到的。
 
@@ -155,14 +155,14 @@ class BalloonDataset(utils.Dataset):
 ```
 `load_balloons`是用来读取 `JSON`文件，提取标注数据，以及递归地调用`add_class` 和`add_image`内部方法以构建数据集。
 
-`load_mask` 会通过绘制多边形，为图片中每个气球生成 `bitmap` 掩码。
+`load_mask` 会通过绘制多边形，为图片中每个气球生成 `bitmap` 蒙层。
 load_mask generates bitmap masks for every object in the image by drawing the polygons.
 `image_reference`只是简单地为每张图片返回作为一个唯一标识的字符串，目的是为了 debug 。这个字符串其实就是图片文件名。
 
-你也许注意到了我的类中没有包含加载图片或返回边界框的方法。其实用于加载图片的`load_image`方法已经在基类`Dataset`中有实现了。而边界框是动态地从掩码中生成的。
+你也许注意到了我的类中没有包含加载图片或返回边界框的方法。其实用于加载图片的`load_image`方法已经在基类`Dataset`中有实现了。而边界框是动态地从蒙层中生成的。
 
 ## 校验数据
-为了校验实现的代码是否正确，我新建了一个`Juyter notebook`。这个文件会加载数据集，能可视化掩码以及边界框，以及能看到锚点已校验我的锚点尺寸是否匹配我要检测物体的尺寸，下面的日子是你期待看到的：
+为了校验实现的代码是否正确，我新建了一个`Juyter notebook`。这个文件会加载数据集，能可视化蒙层以及边界框，以及能看到锚点已校验我的锚点尺寸是否匹配我要检测物体的尺寸，下面的日子是你期待看到的：
 ![example](./images/1_OKE6wyZFfh2f_aZ3rd9BRw.png)
 
 > **代码提示：**
@@ -208,7 +208,7 @@ python3 balloon.py train --dataset=/path/to/dataset --model=last
  [inspect_mode.ipynb](https://github.com/matterport/Mask_RCNN/blob/master/samples/coco/inspect_model.ipynb) 提供了对 `COCO`数据集的可视化以及`debug`的代码，而 [inspect_balloon_model.ipynb](https://github.com/matterport/Mask_RCNN/blob/v2.1/samples/balloon/inspect_balloon_model.ipynb) 只是 [inspect_mode.ipynb](https://github.com/matterport/Mask_RCNN/blob/master/samples/coco/inspect_model.ipynb) 的简化版本
 
 ## 色彩滤镜 
-最终我们会得到物体的形状蒙版，可以通过它们做出色彩滤镜的效果。使用方法很简单：将一张带色彩的图片转化成灰度图，然后利用物体的形状蒙版把物体识别标记出来，接着从带色彩的原始图片中将色彩映射过来。下面是效果图：
+最终我们会得到物体的形状蒙层，可以通过它们做出色彩滤镜的效果。使用方法很简单：将一张带色彩的图片转化成灰度图，然后利用物体的形状蒙层把物体识别标记出来，接着从带色彩的原始图片中将色彩映射过来。下面是效果图：
 ![effect](./images/1_iPAtWFnShPhX5atbY3V0pQ.png)
 
 > **代码提示：**
